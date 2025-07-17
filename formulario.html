@@ -87,6 +87,24 @@
     <div id="listaSemanas" style="margin-top: 2em"></div>
 
     <script>
+      async function verificarSesion() {
+        const res = await fetch(
+          "https://inflacioncanasta.ddns.net:4000/verificar-sesion",
+          {
+            credentials: "include",
+          }
+        );
+
+        if (!res.ok) {
+          alert("Debés iniciar sesión para acceder");
+          window.location.href = "login.html";
+        }
+      }
+
+      verificarSesion();
+    </script>
+
+    <script>
       async function desplazarPrecios() {
         try {
           const res = await fetch(
