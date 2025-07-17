@@ -875,7 +875,7 @@
                 return `
       <div class="${clase} variacion-sin-cambio">
         ${label}: -<br>
-        <small>Precio: $${valorOriginal ?? "-"}</small>
+        <small>Precio: $${Math.round(valorOriginal) ?? "-"}</small>
       </div>`;
               }
 
@@ -883,7 +883,7 @@
                 return `
       <div class="variacion-sin-cambio">
         ${label}: 0.0%<br>
-        <small>Precio: $${valorOriginal ?? "-"}</small>
+        <small>Precio: $${Math.round(valorOriginal) ?? "-"}</small>
       </div>`;
               }
               if (valor === null) return `<div>${label}: -</div>`;
@@ -940,12 +940,15 @@
             tarjeta.innerHTML = `
               <div class="tarjeta-header">
                 <div class="tarjeta-nombre">${p.nombre}</div>
-                <div class="tarjeta-precio-hoy">$${p.precio_hoy ?? "-"}</div>
+                <div class="tarjeta-precio-hoy">$${
+                  Math.round(p.precio_hoy) ?? "-"
+                }</div>
               </div>
               <div class="variacion ${claseVar7}">${varTexto} &mdash; Últ. 7 días</div>
               <div class="tarjeta-precio-anterior">Anterior: $${
-                p.precio_7dias ?? "-"
+                Math.round(p.precio_7dias) ?? "-"
               }</div>
+
             `;
 
             window.addEventListener("click", (e) => {
@@ -1001,7 +1004,7 @@
       async function inicializarChart() {
         try {
           const res = await fetch(
-            "https://veterinarialol.ddns.net:4000/semanas"
+            "https://inflacioncanasta.ddns.net:4000/semanas"
           );
           const semanas = await res.json();
           semanasBase = semanas.map((s) => s.semana);
@@ -1120,7 +1123,6 @@
         .getElementById("mostrarGraficoBtn")
         .addEventListener("click", () => {
           const c = document.getElementById("contenedorGrafico");
-          c.style.display = c.style.display === "none" ? "block" : "none";
         });
 
       // 7) Alternar entre acumulado y semanal

@@ -208,11 +208,9 @@
   <input type="text" value="${
     p.nombre
   }" placeholder="Nombre" style="background:#2a2a2a; color:white; padding:0.5em; border:none; border-radius:5px;" disabled />
-  <input type="number" value="${
-    p.precio_hoy ?? ""
+  <input type="number" value="${Math.round(p.precio_hoy) ?? ""}"
   }" placeholder="Precio Hoy" style="background:#2a2a2a; color:white; padding:0.5em; border:none; border-radius:5px;" disabled />
-  <input type="number" value="${
-    p.precio_7dias ?? ""
+  <input type="number" value="${Math.round(p.precio_7dias) ?? ""}"
   }" placeholder="Precio 7 días" style="background:#2a2a2a; color:white; padding:0.5em; border:none; border-radius:5px;" disabled />
   <input type="number" value="${
     p.precio_14dias ?? ""
@@ -247,14 +245,19 @@
             };
 
             btnGuardar.onclick = async () => {
+              const parseNumber = (id) => {
+                const val = document.getElementById(id).value;
+                return val === "" ? null : parseFloat(val);
+              };
+
               const datos = {
-                nombre: inputs[0].value,
-                precio_hoy: parseFloat(inputs[1].value),
-                precio_7dias: parseFloat(inputs[2].value),
-                precio_14dias: parseFloat(inputs[3].value),
-                precio_21dias: parseFloat(inputs[4].value),
-                precio_28dias: parseFloat(inputs[5].value), // ✅ este es nuevo
-                precio_historico: parseFloat(inputs[6].value),
+                nombre: document.getElementById("nombre").value,
+                precio_hoy: parseNumber("precio_hoy"),
+                precio_7dias: parseNumber("precio_7dias"),
+                precio_14dias: parseNumber("precio_14dias"),
+                precio_21dias: parseNumber("precio_21dias"),
+                precio_28dias: parseNumber("precio_28dias"),
+                precio_historico: parseNumber("precio_historico"),
               };
 
               try {

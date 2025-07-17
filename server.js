@@ -16,10 +16,10 @@ app.use(express.json());
 
 // justo después de `const cors = require('cors');`
 const allowedOrigins = [
-  "https://inflacionsemanal.netlify.app",
+  "https://inflacioncanasta.netlify.app",
   "http://127.0.0.1:5500",
   "http://localhost:5500",
-  "http://inflacioncanasta.ddns.net/",
+  "https://inflacioncanasta.ddns.net",
   "https://localhost:4000",
 ];
 
@@ -106,7 +106,7 @@ const db = mysql.createConnection({
   host: "localhost",
   user: "root",
   password: "120723", // coloca tu contraseña si tienes una
-  database: "inflacion",
+  database: "productos",
 });
 
 // Verificación de conexión
@@ -153,11 +153,8 @@ app.post("/inflacion", (req, res) => {
     precio_28dias,
     precio_historico,
   } = req.body;
-
-  const sql = `INSERT INTO inflacion 
-(nombre, precio_hoy, precio_7dias, precio_14dias, precio_21dias, precio_28dias, precio_historico)
-VALUES (?, ?, ?, ?, ?, ?, ?)`;
-
+  const sql =
+    "INSERT INTO inflacion (nombre, precio_hoy, precio_7dias, precio_14dias, precio_21dias, precio_28dias, precio_historico) VALUES (?, ?, ?, ?, ?, ?, ?)";
   db.query(
     sql,
     [
@@ -169,9 +166,12 @@ VALUES (?, ?, ?, ?, ?, ?, ?)`;
       precio_28dias,
       precio_historico,
     ],
-    (err, resultado) => {
-      if (err) return res.status(500).send(err);
-      res.send("Producto agregado correctamente");
+    (err, result) => {
+      if (err) {
+        console.error("Error al insertar producto:", err); // 💥 esto mostrará el error real
+        return res.status(500).json({ error: "Error al guardar producto" });
+      }
+      res.status(200).json({ mensaje: "Producto guardado con éxito" });
     }
   );
 });
