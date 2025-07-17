@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login Admin</title>
+    <style>
+      body {
+        background-color: #121212;
+        color: #fff;
+        font-family: sans-serif;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+      }
+      form {
+        background-color: #1e1e1e;
+        padding: 2em;
+        border-radius: 10px;
+        box-shadow: 0 0 10px #000;
+      }
+      input {
+        display: block;
+        margin: 1em 0;
+        padding: 0.5em;
+        width: 100%;
+        border: none;
+        border-radius: 5px;
+      }
+      button {
+        background: #03a9f4;
+        color: white;
+        border: none;
+        padding: 0.7em;
+        border-radius: 5px;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <form id="loginForm">
+      <h2>Login de Administrador</h2>
+      <input type="text" name="usuario" placeholder="Usuario" required />
+      <input
+        type="password"
+        name="password"
+        placeholder="Contraseña"
+        required
+      />
+      <button type="submit">Iniciar sesión</button>
+    </form>
+
+    <script>
+      const form = document.getElementById("loginForm");
+
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const formData = new FormData(form);
+        const usuario = formData.get("usuario");
+        const password = formData.get("password");
+
+        const res = await fetch("https://inflacionsemanal.ddns.net:4000/login", {
+          method: "POST",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ usuario, password }),
+        });
+
+        const result = await res.json();
+
+        if (result.success && result.redirect) {
+          window.location.href = result.redirect;
+        } else {
+          alert(result.error || "Credenciales inválidas");
+        }
+      });
+    </script>
+  </body>
+</html>
