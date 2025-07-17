@@ -1,0 +1,50 @@
+body {
+  background-color: #121212;
+  color: #ffffff;
+  font-family: sans-serif;
+  padding: 2em;
+}
+form {
+  display: flex;
+  flex-direction: column;
+  max-width: 400px;
+  margin: auto;
+  gap: 1em;
+  background: #1e1e1e;
+  padding: 2em;
+  border-radius: 10px;
+}
+input,
+button {
+  padding: 0.5em;
+  border: none;
+  border-radius: 5px;
+}
+input {
+  background: #2a2a2a;
+  color: #ffffff;
+}
+button {
+  background: #03dac6;
+  color: #000;
+  cursor: pointer;
+}
+button:hover {
+  background: #00bfa5;
+}
+
+form#formProducto {
+}
+
+@media (max-width: 600px) {
+  #listaProductos > div {
+    flex: 0 0 calc(50% - 1em);
+    box-sizing: border-box;
+  }
+}
+
+div#listaSemanas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 30px;
+}

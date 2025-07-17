@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Agregar o Editar Producto</title>
+    <link rel="stylesheet" href="./css/formulario.css" />
+  </head>
+  <body>
+    <button id="btnAgregar">➕ Agregar producto</button>
+    <form id="formProducto">
+      <input type="hidden" id="id" />
+
+      <label for="nombre">Nombre del producto</label>
+      <input
+        type="text"
+        id="nombre"
+        placeholder="Nombre del producto"
+        required
+      />
+
+      <label for="precio_hoy">Precio Hoy</label>
+      <input type="number" id="precio_hoy" placeholder="Precio Hoy" required />
+
+      <label for="precio_7dias">Precio 7 Días</label>
+      <input type="number" id="precio_7dias" placeholder="Precio 7 Días" />
+
+      <label for="precio_14dias">Precio 14 Días</label>
+      <input type="number" id="precio_14dias" placeholder="Precio 14 Días" />
+
+      <label for="precio_21dias">Precio 21 Días</label>
+      <input type="number" id="precio_21dias" placeholder="Precio 21 Días" />
+
+      <label for="precio_28dias">Precio 28 Días</label>
+      <input type="number" id="precio_28dias" placeholder="Precio 28 Días" />
+
+      <label for="precio_historico">Precio Histórico</label>
+      <input
+        type="number"
+        id="precio_historico"
+        placeholder="Precio Histórico"
+      />
+
+      <button type="submit">Guardar</button>
+    </form>
+    <h3 style="text-align: center; margin-top: 2em">
+      Publicaciones existentes
+    </h3>
+    <div
+      id="listaProductos"
+      style="display: flex; flex-wrap: wrap; gap: 1em; justify-content: center"
+    ></div>
+
+    <button
+      onclick="desplazarPrecios()"
+      style="
+        margin: 1em;
+        padding: 0.5em 1em;
+        background-color: #03dac6;
+        color: black;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+      "
+    >
+      Desplazar Precios Semanales
+    </button>
+
+    <h3 style="text-align: center; margin-top: 3em">Variaciones semanales</h3>
+    <form id="formSemana">
+      <input type="hidden" id="semana_id" />
+      <input
+        type="text"
+        id="semana_texto"
+        placeholder="Ej: 1° sem jun"
+        required
+      />
+      <input
+        type="number"
+        id="semana_variacion"
+        step="0.01"
+        placeholder="Variación (%)"
+        required
+      />
+      <button type="submit">Guardar Semana</button>
+    </form>
+    <div id="listaSemanas" style="margin-top: 2em"></div>
+
+    <script>
+      async function desplazarPrecios() {
+        try {
+          const res = await fetch(
+            "https://inflacioncanasta.ddns.net:4000/desplazar",
+            {
+              method: "POST",
+            }
+          );
+          const data = await res.text();
+          alert(data);
+          window.location.reload();
+        } catch (error) {
+          alert("❌ Error al desplazar precios");
+          console.error(error);
+        }
+      }
+
+      async function obtenerProducto(id) {
+        try {
+          const res = await fetch(
+            `https://inflacioncanasta.ddns.net:4000/inflacion`
+          );
+          const productos = await res.json();
+          const producto = productos.find((p) => p.id == id);
+          if (!producto) return;
+
+          document.getElementById("id").value = producto.id;
+          document.getElementById("nombre").value = producto.nombre;
+          document.getElementById("precio_hoy").value = producto.precio_hoy;
+          document.getElementById("precio_7dias").value = producto.precio_7dias;
+          document.getElementById("precio_14dias").value =
+            producto.precio_14dias;
+          document.getElementById("precio_21dias").value =
+            producto.precio_21dias;
+          document.getElementById("precio_28dias").value =
+            producto.precio_28dias;
+          document.getElementById("precio_historico").value =
+            producto.precio_historico;
+        } catch (err) {
+          console.error("Error al obtener producto", err);
+        }
+      }
+
+      const urlParams = new URLSearchParams(window.location.search);
+      const idParam = urlParams.get("id");
+      if (idParam) obtenerProducto(idParam);
+
+      const form = document.getElementById("formProducto");
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const id = document.getElementById("id").value;
+        const datos = {
+          nombre: document.getElementById("nombre").value,
+          precio_hoy: parseFloat(document.getElementById("precio_hoy").value),
+          precio_7dias: parseFloat(
+            document.getElementById("precio_7dias").value
+          ),
+          precio_14dias: parseFloat(
+            document.getElementById("precio_14dias").value
+          ),
+          precio_21dias: parseFloat(
+            document.getElementById("precio_21dias").value
+          ),
+
+          precio_28dias: parseFloat(
+            document.getElementById("precio_28dias").value
+          ),
+
+          precio_historico: parseFloat(
+            document.getElementById("precio_historico").value
+          ),
+        };
+
+        const metodo = id ? "PUT" : "POST";
+        const url = id
+          ? `https://inflacioncanasta.ddns.net:4000/inflacion/${id}`
+          : "https://inflacioncanasta.ddns.net:4000/inflacion";
+
+        try {
+          await fetch(url, {
+            method: metodo,
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(datos),
+          });
+          alert("Producto guardado con éxito");
+          window.location.href = "formulario.html";
+        } catch (error) {
+          alert("Error al guardar producto");
+          console.error(error);
+        }
+      });
+
+      async function cargarListaProductos() {
+        try {
+          const res = await fetch(
+            "https://inflacioncanasta.ddns.net:4000/inflacion"
+          );
+          const productos = await res.json();
+          const lista = document.getElementById("listaProductos");
+          lista.innerHTML = "";
+
+          productos.forEach((p) => {
+            const tarjeta = document.createElement("div");
+            tarjeta.style.backgroundColor = "#1e1e1e";
+            tarjeta.style.padding = "1em";
+            tarjeta.style.borderRadius = "10px";
+            tarjeta.style.border = "1px solid #444";
+            tarjeta.style.display = "flex";
+            tarjeta.style.flexDirection = "column";
+            tarjeta.style.gap = "0.5em";
+
+            // ✅ lo importante:
+            tarjeta.style.flex = "1 1 calc(50% - 1em)";
+            tarjeta.style.maxWidth = "calc(50% - 1em)";
+            tarjeta.style.boxSizing = "border-box";
+
+            tarjeta.innerHTML = `
+  <input type="text" value="${
+    p.nombre
+  }" placeholder="Nombre" style="background:#2a2a2a; color:white; padding:0.5em; border:none; border-radius:5px;" disabled />
+  <input type="number" value="${
+    p.precio_hoy ?? ""
+  }" placeholder="Precio Hoy" style="background:#2a2a2a; color:white; padding:0.5em; border:none; border-radius:5px;" disabled />
+  <input type="number" value="${
+    p.precio_7dias ?? ""
+  }" placeholder="Precio 7 días" style="background:#2a2a2a; color:white; padding:0.5em; border:none; border-radius:5px;" disabled />
+  <input type="number" value="${
+    p.precio_14dias ?? ""
+  }" placeholder="Precio 14 días" style="background:#2a2a2a; color:white; padding:0.5em; border:none; border-radius:5px;" disabled />
+  <input type="number" value="${
+    p.precio_21dias ?? ""
+  }" placeholder="Precio 21 días" style="background:#2a2a2a; color:white; padding:0.5em; border:none; border-radius:5px;" disabled />
+  <input type="number" value="${
+    p.precio_28dias ?? ""
+  }" placeholder="Precio 28 días" style="background:#2a2a2a; color:white; padding:0.5em; border:none; border-radius:5px;" disabled />
+  <input type="number" value="${
+    p.precio_historico ?? ""
+  }" placeholder="Precio Histórico" style="background:#2a2a2a; color:white; padding:0.5em; border:none; border-radius:5px;" disabled />
+
+  <div style="display: flex; gap: 0.5em;">
+    <button class="btn-editar">✏️ Editar</button>
+    <button class="btn-guardar" style="display:none; background:#03dac6;">💾 Guardar</button>
+    <button onclick="eliminarProducto(${
+      p.id
+    })" style="background: #e53935; color:white;">🗑️ Eliminar</button>
+  </div>
+`;
+
+            const inputs = tarjeta.querySelectorAll("input");
+            const btnEditar = tarjeta.querySelector(".btn-editar");
+            const btnGuardar = tarjeta.querySelector(".btn-guardar");
+
+            btnEditar.onclick = () => {
+              inputs.forEach((i) => (i.disabled = false));
+              btnEditar.style.display = "none";
+              btnGuardar.style.display = "inline-block";
+            };
+
+            btnGuardar.onclick = async () => {
+              const datos = {
+                nombre: inputs[0].value,
+                precio_hoy: parseFloat(inputs[1].value),
+                precio_7dias: parseFloat(inputs[2].value),
+                precio_14dias: parseFloat(inputs[3].value),
+                precio_21dias: parseFloat(inputs[4].value),
+                precio_28dias: parseFloat(inputs[5].value), // ✅ este es nuevo
+                precio_historico: parseFloat(inputs[6].value),
+              };
+
+              try {
+                await fetch(
+                  `https://inflacioncanasta.ddns.net:4000/inflacion/${p.id}`,
+                  {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(datos),
+                  }
+                );
+
+                alert("✅ Producto actualizado");
+                cargarListaProductos();
+              } catch (error) {
+                alert("❌ Error al actualizar producto");
+                console.error(error);
+              }
+            };
+
+            lista.appendChild(tarjeta);
+          });
+        } catch (error) {
+          console.error("Error al cargar productos:", error);
+        }
+      }
+
+      async function eliminarProducto(id) {
+        if (!confirm("¿Estás seguro de eliminar este producto?")) return;
+        try {
+          await fetch(
+            `https://inflacioncanasta.ddns.net:4000/inflacion/${id}`,
+            {
+              method: "DELETE",
+            }
+          );
+          cargarListaProductos();
+        } catch (error) {
+          console.error("Error al eliminar producto:", error);
+        }
+      }
+
+      cargarListaProductos();
+    </script>
+
+    <script>
+      async function cargarSemanas() {
+        const res = await fetch(
+          "https://inflacioncanasta.ddns.net:4000/semanas"
+        );
+        const semanas = await res.json();
+        const cont = document.getElementById("listaSemanas");
+        cont.innerHTML = semanas
+          .map(
+            (s) => `
+  <div style="margin-bottom:10px;">
+    <input type="text" value="${s.semana}" disabled />
+    <input type="number" value="${s.variacion}" disabled />
+    <button onclick="editarSemana(${s.id}, '${s.semana}', ${s.variacion})">✏️</button>
+    <button onclick="eliminarSemana(${s.id})" style="background:#e53935; color:white;">🗑️</button>
+  </div>
+`
+          )
+          .join("");
+      }
+
+      function editarSemana(id, semana, variacion) {
+        document.getElementById("semana_id").value = id;
+        document.getElementById("semana_texto").value = semana;
+        document.getElementById("semana_variacion").value = variacion;
+      }
+
+      document
+        .getElementById("formSemana")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const id = document.getElementById("semana_id").value;
+          const semana = document.getElementById("semana_texto").value;
+          const variacion = parseFloat(
+            document.getElementById("semana_variacion").value
+          );
+
+          const url = id
+            ? `https://inflacioncanasta.ddns.net:4000/semanas/${id}`
+            : "https://inflacioncanasta.ddns.net:4000/semanas";
+          const method = id ? "PUT" : "POST";
+
+          const response = await fetch(url, {
+            method,
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ semana, variacion }),
+          });
+
+          if (!response.ok) {
+            const errText = await response.text();
+            alert("Error al guardar semana:\n" + errText);
+            return;
+          }
+
+          document.getElementById("semana_id").value = "";
+          document.getElementById("formSemana").reset();
+          cargarSemanas();
+        });
+
+      // ✅ ESTA FUNCIÓN DEBE ESTAR FUERA DEL BLOQUE ANTERIOR
+      async function eliminarSemana(id) {
+        if (!confirm("¿Estás seguro de eliminar esta semana?")) return;
+        try {
+          await fetch(`https://inflacioncanasta.ddns.net:4000/semanas/${id}`, {
+            method: "DELETE",
+          });
+          cargarSemanas(); // recarga la lista
+        } catch (err) {
+          alert("❌ Error al eliminar la semana");
+          console.error(err);
+        }
+      }
+    </script>
+
+    <script>
+      const btnAgregar = document.getElementById("btnAgregar");
+      btnAgregar.onclick = () => {
+        document.getElementById("id").value = ""; // limpia el hidden
+        form.reset(); // limpia los inputs
+        form.style.display = "flex"; // muestra el form
+      };
+    </script>
+
+    <script>
+      cargarSemanas();
+    </script>
+  </body>
+</html>
